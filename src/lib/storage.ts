@@ -1,4 +1,4 @@
-import { Product, Shop, Order, DueCollectionRecord, DailyMetrics } from '../types';
+import { Product, Shop, Order, DueCollectionRecord, DailyMetrics, Category } from '../types';
 
 const STORAGE_KEYS = {
   SHOPS: 'dsr_shops_v1',
@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   ORDERS: 'dsr_orders_v1',
   COLLECTIONS: 'dsr_collections_v1',
   LAST_MEMO_NUM: 'dsr_last_memo_v1',
+  CATEGORIES: 'dsr_categories_v1',
 };
 
 // Initial default FMCG products common in Bangladesh grocery distribution
@@ -626,4 +627,47 @@ export function resetToDemoData() {
   localStorage.setItem(STORAGE_KEYS.SHOPS, JSON.stringify(DEFAULT_SHOPS));
   localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(getInitialOrders()));
   localStorage.removeItem(STORAGE_KEYS.COLLECTIONS);
+  localStorage.removeItem(STORAGE_KEYS.CATEGORIES);
+}
+
+const DEFAULT_CATEGORIES: Category[] = [
+  { id: 'cat-1', name: 'তেল ও ঘি', createdAt: '2026-09-18T00:00:00.000Z' },
+  { id: 'cat-2', name: 'আটা ও ময়দা', createdAt: '2026-09-18T00:00:00.000Z' },
+  { id: 'cat-3', name: 'চিনি ও গুড়', createdAt: '2026-09-18T00:00:00.000Z' },
+  { id: 'cat-4', name: 'দুধ ও দুগ্ধজাত', createdAt: '2026-09-18T00:00:00.000Z' },
+  { id: 'cat-5', name: 'মসলা', createdAt: '2026-09-18T00:00:00.000Z' },
+  { id: 'cat-6', name: 'টয়লেটিজ ও সাবান', createdAt: '2026-09-18T00:00:00.000Z' },
+  { id: 'cat-7', name: 'পানীয়', createdAt: '2026-09-18T00:00:00.000Z' },
+  { id: 'cat-8', name: 'টয়লেটিজ ও কসমেটিক্স', createdAt: '2026-09-18T00:00:00.000Z' },
+  { id: 'cat-9', name: 'স্ন্যাক্স ও বিস্কুট', createdAt: '2026-09-18T00:00:00.000Z' },
+  { id: 'cat-10', name: 'টয়লেটিজ ও ক্লিনিং', createdAt: '2026-09-18T00:00:00.000Z' }
+];
+
+export function getCategories(): Category[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(DEFAULT_CATEGORIES));
+      return DEFAULT_CATEGORIES;
+    }
+    return JSON.parse(raw);
+  } catch {
+    return DEFAULT_CATEGORIES;
+  }
+}
+
+export function saveCategories(categories: Category[]) {
+  localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+}
+
+export function saveCategory(category: Category): Category {
+  const categories = getCategories();
+  const idx = categories.findIndex((c) => c.id === category.id || c.name === category.name);
+  if (idx >= 0) {
+    categories[idx] = category;
+  } else {
+    categories.push(category);
+  }
+  saveCategories(categories);
+  return category;
 }

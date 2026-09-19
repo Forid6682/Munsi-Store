@@ -10,16 +10,18 @@ import {
   CheckCircle,
   DollarSign
 } from 'lucide-react';
-import { Product } from '../types';
+import { Product, Category } from '../types';
 
 interface InventoryViewProps {
   products: Product[];
+  categoriesProp?: Category[];
   onAddProduct: (product: Product) => void;
   onAdjustStock: (productId: string, delta: number) => void;
 }
 
 export const InventoryView: React.FC<InventoryViewProps> = ({
   products,
+  categoriesProp,
   onAddProduct,
   onAdjustStock,
 }) => {
@@ -47,9 +49,12 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
 
   const categories = useMemo(() => {
     const set = new Set<string>();
+    if (categoriesProp) {
+      categoriesProp.forEach((c) => set.add(c.name));
+    }
     products.forEach((p) => set.add(p.category));
     return Array.from(set);
-  }, [products]);
+  }, [products, categoriesProp]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {

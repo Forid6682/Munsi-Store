@@ -13,7 +13,10 @@ import {
   getPendingSyncOrders,
   markOrdersAsSynced,
   getUserProfile,
-  saveUserProfile
+  saveUserProfile,
+  getCategories,
+  saveCategory,
+  saveCategories
 } from './lib/storage';
 import {
   subscribeToCloudShops,
@@ -22,7 +25,9 @@ import {
   saveOrderToCloud,
   saveShopToCloud,
   saveProductToCloud,
-  saveDueCollectionToCloud
+  saveDueCollectionToCloud,
+  subscribeToCloudCategories,
+  saveCategoryToCloud
 } from './lib/firebase';
 import { syncOrdersToGoogleSheets, backupAllDataToGoogleDrive } from './lib/sheetsService';
 import { Header } from './components/Header';
@@ -33,7 +38,8 @@ import { ShopsListView } from './components/ShopsListView';
 import { InventoryView } from './components/InventoryView';
 import { RouteMapView } from './components/RouteMapView';
 import { MemoModal } from './components/MemoModal';
-import { Product, Shop, Order, UserProfile, PaymentMethod, UserRole, DueCollectionRecord } from './types';
+import { AdminPanelView } from './components/AdminPanelView';
+import { Product, Shop, Order, UserProfile, PaymentMethod, UserRole, DueCollectionRecord, Category } from './types';
 import { CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react';
 import { usePWAInstall } from './hooks/usePWAInstall';
 
@@ -47,6 +53,7 @@ export default function App() {
 
   // Application Data State
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [pendingSyncCount, setPendingSyncCount] = useState<number>(0);
@@ -81,12 +88,14 @@ export default function App() {
   // Load and refresh state from local storage
   const reloadData = useCallback(() => {
     const prods = getProducts();
+    const cats = getCategories();
     const shps = getShops();
     const ords = getOrders();
     const pending = getPendingSyncOrders();
     const user = getUserProfile();
 
     setProducts(prods);
+    setCategories(cats);
     setShops(shps);
     setOrders(ords);
     setPendingSyncCount(pending.length);
@@ -117,6 +126,7 @@ export default function App() {
     let unsubscribeShops: (() => void) | undefined;
     let unsubscribeProducts: (() => void) | undefined;
     let unsubscribeOrders: (() => void) | undefined;
+    let unsubscribeCategories: (() => void) | undefined;
 
     try {
       unsubscribeShops = subscribeToCloudShops((cloudShops) => {
@@ -139,6 +149,13 @@ export default function App() {
           cloudOrders.forEach((o) => saveOrder(o));
         }
       });
+
+      unsubscribeCategories = subscribeToCloudCategories((cloudCategories) => {
+        if (cloudCategories && cloudCategories.length > 0) {
+          setCategories(cloudCategories);
+          saveCategories(cloudCategories);
+        }
+      });
     } catch (err) {
       console.warn('Firestore subscription initialized in offline mode:', err);
     }
@@ -149,6 +166,7 @@ export default function App() {
       if (unsubscribeShops) unsubscribeShops();
       if (unsubscribeProducts) unsubscribeProducts();
       if (unsubscribeOrders) unsubscribeOrders();
+      if (unsubscribeCategories) unsubscribeCategories();
     };
   }, [reloadData]);
 
@@ -281,6 +299,14 @@ export default function App() {
     saveProductToCloud(product).catch(() => {});
     reloadData();
     showToast(`পণ্য "${product.banglaName}" সফলভাবে যুক্ত হয়েছে!`, 'success');
+  };
+
+  // Add Category Handler
+  const handleAddCategory = (category: Category) => {
+    saveCategory(category);
+    saveCategoryToCloud(category).catch(() => {});
+    reloadData();
+    showToast(`ক্যাটাগরি "${category.name}" সফলভাবে তৈরি হয়েছে!`, 'success');
   };
 
   // Stock Adjustment Handler
@@ -486,6 +512,7 @@ export default function App() {
         {activeTab === 'map' && (
           <RouteMapView
             shops={shops}
+            onAddShop={handleAddShop}
             onSelectShopForOrder={(shopId) => {
               setTargetOrderShopId(shopId);
               setActiveTab('order');
@@ -507,8 +534,23 @@ export default function App() {
         {activeTab === 'inventory' && (
           <InventoryView
             products={products}
+            categoriesProp={categories}
             onAddProduct={handleAddProduct}
             onAdjustStock={handleAdjustStock}
+          />
+        )}
+
+        {activeTab === 'admin' && (
+          <AdminPanelView
+            currentUser={userProfile}
+            activeSimulatedRole={activeSimulatedRole}
+            onSimulatedRoleChange={setActiveSimulatedRole}
+            onRefreshUserData={reloadData}
+            products={products}
+            categories={categories}
+            orders={orders}
+            onAddCategory={handleAddCategory}
+            onAddProduct={handleAddProduct}
           />
         )}
       </main>

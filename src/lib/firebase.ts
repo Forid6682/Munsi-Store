@@ -21,7 +21,7 @@ import {
   getDocFromServer
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
-import { AppUser, UserRole, Shop, Product, Order, DueCollectionRecord } from '../types';
+import { AppUser, UserRole, Shop, Product, Order, DueCollectionRecord, Category } from '../types';
 
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
@@ -331,6 +331,30 @@ export async function saveDueCollectionToCloud(record: DueCollectionRecord) {
   const path = `dueCollections/${record.id}`;
   try {
     await setDoc(doc(db, 'dueCollections', record.id), record);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export function subscribeToCloudCategories(onData: (categories: Category[]) => void) {
+  const path = 'categories';
+  return onSnapshot(
+    collection(db, path),
+    (snapshot) => {
+      const categories: Category[] = [];
+      snapshot.forEach((d) => categories.push(d.data() as Category));
+      onData(categories);
+    },
+    (error) => {
+      handleFirestoreError(error, OperationType.GET, path);
+    }
+  );
+}
+
+export async function saveCategoryToCloud(category: Category) {
+  const path = `categories/${category.id}`;
+  try {
+    await setDoc(doc(db, 'categories', category.id), category);
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }

@@ -1,8 +1,8 @@
 import React from 'react';
-import { ShoppingCart, FileText, Store, Package, MapPin } from 'lucide-react';
+import { ShoppingCart, FileText, Store, Package, MapPin, ShieldCheck } from 'lucide-react';
 import { UserRole } from '../types';
 
-export type NavTab = 'order' | 'orders' | 'shops' | 'map' | 'inventory';
+export type NavTab = 'order' | 'orders' | 'shops' | 'map' | 'inventory' | 'admin';
 
 interface NavigationProps {
   activeTab: NavTab;
@@ -51,6 +51,15 @@ export const Navigation: React.FC<NavigationProps> = ({
       icon: Package,
     },
   ];
+
+  if (userRole === 'admin') {
+    tabs.push({
+      id: 'admin' as NavTab,
+      label: 'এডমিন প্যানেল',
+      shortLabel: 'এডমিন',
+      icon: ShieldCheck,
+    });
+  }
 
   return (
     <>
@@ -101,7 +110,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
       {/* Mobile Fixed Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-neutral-200/90 shadow-2xl safe-area-inset-bottom">
-        <div className="grid grid-cols-5 h-15">
+        <div className={`grid h-15 ${tabs.length === 6 ? 'grid-cols-6' : 'grid-cols-5'}`}>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;

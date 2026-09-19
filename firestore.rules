@@ -146,5 +146,11 @@ service cloud.firestore {
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
+
+    // 7. Categories Collection
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
   }
 }

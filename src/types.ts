@@ -118,3 +118,10 @@ export interface UserProfile {
   accessToken?: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+}
+

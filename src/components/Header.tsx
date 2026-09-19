@@ -112,16 +112,26 @@ export const Header: React.FC<HeaderProps> = ({
                 মুন্সী স্টোর <span className="text-emerald-300 font-normal text-xs sm:text-sm">| DSR অর্ডার বুকার</span>
               </h1>
               {/* Interactive Role Switch Badge */}
-              <button
-                type="button"
-                onClick={() => setShowRoleSelector(!showRoleSelector)}
-                className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs cursor-pointer hover:opacity-90 transition-opacity ${roleBadgeConfig.bg}`}
-                title="রোল পরিবর্তন করতে ক্লিক করুন"
-              >
-                <RoleIcon className="w-3 h-3" />
-                <span>{roleBadgeConfig.label}</span>
-                <span className="text-[9px] opacity-80">▼</span>
-              </button>
+              {(!activeUser || activeUser?.role === 'admin' || activeUser?.email?.toLowerCase() === 'ahmedmdforid39@gmail.com') ? (
+                <button
+                  type="button"
+                  onClick={() => setShowRoleSelector(!showRoleSelector)}
+                  className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs cursor-pointer hover:opacity-90 transition-opacity ${roleBadgeConfig.bg}`}
+                  title="রোল পরিবর্তন করতে ক্লিক করুন"
+                >
+                  <RoleIcon className="w-3 h-3" />
+                  <span>{roleBadgeConfig.label}</span>
+                  <span className="text-[9px] opacity-80">▼</span>
+                </button>
+              ) : (
+                <div
+                  className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs select-none ${roleBadgeConfig.bg}`}
+                  title={`আপনার বর্তমান নির্ধারিত রোল: ${roleBadgeConfig.label}`}
+                >
+                  <RoleIcon className="w-3 h-3" />
+                  <span>{roleBadgeConfig.label}</span>
+                </div>
+              )}
 
               {/* Role Dropdown */}
               {showRoleSelector && (

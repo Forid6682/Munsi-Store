@@ -1,0 +1,30 @@
+{
+  "name": "Shop Order Booker & Inventory",
+  "short_name": "মুন্সী স্টোর",
+  "description": "দোকানে দোকানে দ্রুত অর্ডার কাটা, ইনভেন্টরি ও সেলস ট্র্যাকিং, ফায়ারবেস ব্যাকএন্ড এবং এসআর (SR), ডিএসআর (DSR) ও এডমিন রোল ভিত্তিক PWA অ্যাপ।",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5f5f5",
+  "theme_color": "#059669",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
