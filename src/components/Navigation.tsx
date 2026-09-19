@@ -9,6 +9,7 @@ interface NavigationProps {
   setActiveTab: (tab: NavTab) => void;
   cartCount: number;
   userRole?: UserRole;
+  currentUserProfile?: any;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
@@ -16,7 +17,13 @@ export const Navigation: React.FC<NavigationProps> = ({
   setActiveTab,
   cartCount,
   userRole = 'admin',
+  currentUserProfile,
 }) => {
+  // Determine if the actual logged-in user is an admin
+  const isActualAdmin = !currentUserProfile || 
+    currentUserProfile.role === 'admin' || 
+    currentUserProfile.email?.toLowerCase() === 'ahmedmdforid39@gmail.com';
+
   const tabs = [
     {
       id: 'order' as NavTab,
@@ -52,7 +59,7 @@ export const Navigation: React.FC<NavigationProps> = ({
     },
   ];
 
-  if (userRole === 'admin') {
+  if (userRole === 'admin' && isActualAdmin) {
     tabs.push({
       id: 'admin' as NavTab,
       label: 'এডমিন প্যানেল',

@@ -13,12 +13,14 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   collection,
   getDocs,
   onSnapshot,
   query,
   orderBy,
-  getDocFromServer
+  getDocFromServer,
+  enableIndexedDbPersistence
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { AppUser, UserRole, Shop, Product, Order, DueCollectionRecord, Category } from '../types';
@@ -26,8 +28,19 @@ import { AppUser, UserRole, Shop, Product, Order, DueCollectionRecord, Category 
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 /* CRITICAL: The app will break without this line */
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
 export const auth = getAuth(app);
+
+// Enable Firestore local offline cache persistence for seamless field-level offline usage
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code === 'failed-precondition') {
+    console.warn('Firestore offline persistence failed-precondition (multiple tabs open).');
+  } else if (err.code === 'unimplemented') {
+    console.warn('Firestore offline persistence is unimplemented in this browser.');
+  } else {
+    console.warn('Firestore offline persistence error:', err);
+  }
+});
 
 const provider = new GoogleAuthProvider();
 provider.addScope('https://www.googleapis.com/auth/spreadsheets');
@@ -38,9 +51,7 @@ export async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('Firebase client is in offline mode or waiting for connection.');
-    }
+    console.warn('Firebase connection test: Operating in offline/cached mode. Local database active.');
   }
 }
 testConnection();
@@ -73,6 +84,12 @@ export interface FirestoreErrorInfo {
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const isPermissionError = error instanceof Error && (
+    error.message.includes('permission-denied') ||
+    error.message.includes('Missing or insufficient permissions') ||
+    (error as any).code === 'permission-denied'
+  );
+
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
@@ -90,8 +107,14 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path,
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+
+  if (isPermissionError) {
+    console.error('Firestore Security Rule / Permission Error: ', JSON.stringify(errInfo));
+    throw new Error(JSON.stringify(errInfo));
+  } else {
+    // For network/offline/unavailable errors, do not crash the app. Just log as a warning.
+    console.warn('Firestore Connection/Transient Error: ', JSON.stringify(errInfo));
+  }
 }
 
 // Authentication Handlers
@@ -359,3 +382,40 @@ export async function saveCategoryToCloud(category: Category) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
 }
+
+export async function deleteProductFromCloud(productId: string) {
+  const path = `products/${productId}`;
+  try {
+    await deleteDoc(doc(db, 'products', productId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function deleteShopFromCloud(shopId: string) {
+  const path = `shops/${shopId}`;
+  try {
+    await deleteDoc(doc(db, 'shops', shopId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function deleteOrderFromCloud(orderId: string) {
+  const path = `orders/${orderId}`;
+  try {
+    await deleteDoc(doc(db, 'orders', orderId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function deleteCategoryFromCloud(categoryId: string) {
+  const path = `categories/${categoryId}`;
+  try {
+    await deleteDoc(doc(db, 'categories', categoryId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+

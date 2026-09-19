@@ -133,10 +133,11 @@ export const RouteMapView: React.FC<RouteMapViewProps> = ({
         zoomControl: false,
       });
 
-      // Standard OpenStreetMap Free Tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-        maxZoom: 19,
+      // CartoDB Voyager - Premium, Clean, Fast, High-Contrast Free Map Tiles
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
       }).addTo(map);
 
       // Custom zoom control in bottom-right

@@ -16,7 +16,12 @@ import {
   saveUserProfile,
   getCategories,
   saveCategory,
-  saveCategories
+  saveCategories,
+  deleteProductFromLocal,
+  deleteShopFromLocal,
+  deleteOrderFromLocal,
+  deleteCategoryFromLocal,
+  resetToDemoData
 } from './lib/storage';
 import {
   subscribeToCloudShops,
@@ -27,7 +32,11 @@ import {
   saveProductToCloud,
   saveDueCollectionToCloud,
   subscribeToCloudCategories,
-  saveCategoryToCloud
+  saveCategoryToCloud,
+  deleteProductFromCloud,
+  deleteShopFromCloud,
+  deleteOrderFromCloud,
+  deleteCategoryFromCloud
 } from './lib/firebase';
 import { syncOrdersToGoogleSheets, backupAllDataToGoogleDrive } from './lib/sheetsService';
 import { Header } from './components/Header';
@@ -309,6 +318,51 @@ export default function App() {
     showToast(`ক্যাটাগরি "${category.name}" সফলভাবে তৈরি হয়েছে!`, 'success');
   };
 
+  // Delete Handlers for Admin Panel
+  const handleDeleteProduct = (productId: string) => {
+    deleteProductFromLocal(productId);
+    deleteProductFromCloud(productId).catch(() => {});
+    reloadData();
+    showToast('পণ্যটি সফলভাবে মুছে ফেলা হয়েছে!', 'success');
+  };
+
+  const handleDeleteShop = (shopId: string) => {
+    deleteShopFromLocal(shopId);
+    deleteShopFromCloud(shopId).catch(() => {});
+    reloadData();
+    showToast('দোকানটি সফলভাবে মুছে ফেলা হয়েছে!', 'success');
+  };
+
+  const handleDeleteOrder = (orderId: string) => {
+    deleteOrderFromLocal(orderId);
+    deleteOrderFromCloud(orderId).catch(() => {});
+    reloadData();
+    showToast('অর্ডার মেমোটি সফলভাবে মুছে ফেলা হয়েছে!', 'success');
+  };
+
+  const handleDeleteCategory = (categoryId: string) => {
+    deleteCategoryFromLocal(categoryId);
+    deleteCategoryFromCloud(categoryId).catch(() => {});
+    reloadData();
+    showToast('ক্যাটাগরিটি সফলভাবে মুছে ফেলা হয়েছে!', 'success');
+  };
+
+  // Reset/Wipe handler for Full Site Control
+  const handleResetSite = (type: 'clear_all' | 'restore_defaults') => {
+    if (type === 'clear_all') {
+      localStorage.removeItem('munsi_products');
+      localStorage.removeItem('munsi_shops');
+      localStorage.removeItem('munsi_orders');
+      localStorage.removeItem('munsi_collections');
+      localStorage.removeItem('munsi_categories');
+      showToast('সব লোকাল ডাটা সফলভাবে মুছে ফেলা হয়েছে! ক্লাউড ডাটা অক্ষত আছে।', 'success');
+    } else {
+      resetToDemoData();
+      showToast('ডিফল্ট এফএমসিজি ডাটা সফলভাবে রিস্টোর করা হয়েছে!', 'success');
+    }
+    reloadData();
+  };
+
   // Stock Adjustment Handler
   const handleAdjustStock = (productId: string, delta: number) => {
     adjustProductStock(productId, delta);
@@ -464,6 +518,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         cartCount={cartCount}
         userRole={activeSimulatedRole}
+        currentUserProfile={userProfile}
       />
 
       {/* Main Content Area */}
@@ -549,8 +604,17 @@ export default function App() {
             products={products}
             categories={categories}
             orders={orders}
+            shops={shops}
             onAddCategory={handleAddCategory}
             onAddProduct={handleAddProduct}
+            onDeleteProduct={handleDeleteProduct}
+            onDeleteShop={handleDeleteShop}
+            onDeleteOrder={handleDeleteOrder}
+            onDeleteCategory={handleDeleteCategory}
+            onResetSite={handleResetSite}
+            onSyncSheets={handleSyncWithSheets}
+            onBackupDrive={handleBackupToDrive}
+            isSyncing={isSyncing}
           />
         )}
       </main>

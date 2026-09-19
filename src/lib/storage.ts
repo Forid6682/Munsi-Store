@@ -671,3 +671,28 @@ export function saveCategory(category: Category): Category {
   saveCategories(categories);
   return category;
 }
+
+export function deleteProductFromLocal(productId: string) {
+  const products = getProducts();
+  const filtered = products.filter((p) => p.id !== productId);
+  saveProducts(filtered);
+}
+
+export function deleteShopFromLocal(shopId: string) {
+  const shops = getShops();
+  const filtered = shops.filter((s) => s.id !== shopId);
+  saveShops(filtered);
+}
+
+export function deleteOrderFromLocal(orderId: string) {
+  const orders = getOrders();
+  const filtered = orders.filter((o) => o.id !== orderId);
+  saveOrders(filtered);
+}
+
+export function deleteCategoryFromLocal(categoryId: string) {
+  const categories = getCategories();
+  const filtered = categories.filter((c) => c.id !== categoryId);
+  saveCategories(filtered);
+}
+

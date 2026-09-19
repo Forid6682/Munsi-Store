@@ -11,7 +11,8 @@ import {
   CheckCircle,
   ShoppingBag,
   ArrowRight,
-  LocateFixed
+  LocateFixed,
+  Compass
 } from 'lucide-react';
 import { Shop, PaymentMethod } from '../types';
 
@@ -281,15 +282,32 @@ export const ShopsListView: React.FC<ShopsListViewProps> = ({
                   </button>
                 </div>
 
-                {onOpenMapForShop && (
+                <div className="mt-2.5 grid grid-cols-2 gap-2">
+                  {onOpenMapForShop && (
+                    <button
+                      onClick={() => onOpenMapForShop(shop.id)}
+                      className="py-1.5 px-2 rounded-xl text-[10px] sm:text-[11px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 transition-colors flex items-center justify-center gap-1"
+                      title="ইন-অ্যাপ ম্যাপ ট্যাবে দেখুন"
+                    >
+                      <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
+                      <span>ইন-অ্যাপ ম্যাপ</span>
+                    </button>
+                  )}
+
                   <button
-                    onClick={() => onOpenMapForShop(shop.id)}
-                    className="mt-2 w-full py-1.5 px-2 rounded-xl text-[11px] font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 transition-colors flex items-center justify-center gap-1.5"
+                    onClick={() => {
+                      const lat = shop.lat ?? 23.75;
+                      const lng = shop.lng ?? 90.39;
+                      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+                      window.open(url, '_blank');
+                    }}
+                    className="py-1.5 px-2 rounded-xl text-[10px] sm:text-[11px] font-bold bg-neutral-900 hover:bg-neutral-800 text-white transition-colors flex items-center justify-center gap-1"
+                    title="গুগল ম্যাপে দিকনির্দেশনা ও রুট ট্রেস করুন"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>ম্যাপে অবস্থান ও নেভিগেশন দেখুন</span>
+                    <Compass className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span>জিপিএস ডিরেকশন</span>
                   </button>
-                )}
+                </div>
               </div>
             </div>
           );
